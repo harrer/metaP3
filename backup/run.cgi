@@ -1730,15 +1730,9 @@ $optionsfile = "$BASE/options";
 print <<EOF848;
 <!-- include TOP -->
 <style>
-ul
+H4,H2,H3,a
 {
-list-style-type:square;
-margin:0;
-padding:0;
-}
-H4
-{
-font-family:"Arial";
+font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
 font-size:20px;
 }
 #customers
@@ -1750,7 +1744,7 @@ border-collapse:collapse;
 #customers td, #customers th 
 {
 font-size:1em;
-border:1px solid #98bf21;
+border:1px solid #9C9C9C;
 padding:3px 7px 2px 7px;
 }
 #customers th 
@@ -1759,13 +1753,13 @@ font-size:1.1em;
 text-align:left;
 padding-top:5px;
 padding-bottom:4px;
-background-color:#A7C942;
+background-color:#9C9C9C;
 color:#ffffff;
 }
 #customers tr.alt td 
 {
 color:#000000;
-background-color:#EAF2D3;
+background-color:#9C9C9C;
 }
 </style>
 <title>metaP server</title>
