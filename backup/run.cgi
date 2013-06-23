@@ -159,10 +159,10 @@ if(defined $CGItask) {
 print "Content-type: text/html", "\n\n";
 
 # CGI internal PATHs
-$RACINE = "/var/www/metap3";
+$RACINE = "/var/www/metap3/";
 $USERDATA = "$RACINE/users";
-$EXEC = "/var/www/metap3_ed/exec";
-$DATA = "/var/www/metap3_ed/data";
+$EXEC = "/var/www/metap3/exec";
+$DATA = "/var/www/metap3/data";
 $LOG = "/tmp/metap3.log";
 
 # HTML PATHs
@@ -233,7 +233,7 @@ if((defined $filename) and (length($filename) > 3)) {
 	}
 	close UPLOADFILE;
 	system("cp $BASE/input.tmp $BASE/input.csv");
-	$syserr = `/usr/bin/perl $EXEC/R-2.15.1/library/gdata/perl/xls2csvB.pl -s $BASE/input.tmp $BASE/input.csv 1`;
+	$syserr = `/usr/bin/perl /var/www/metap3/R-2.15.1/library/gdata/perl/xls2csvB.pl -s $BASE/input.tmp $BASE/input.csv 1`;
 	system("cat $BASE/input.csv | sed 's/^M//g' | sed 's/,//g' | sed 's/\"//g' > $BASE/input");
 	local $/ = undef;
 	open FILE, "$BASE/input" or die "Couldn't open file: $!";
