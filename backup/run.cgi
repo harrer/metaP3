@@ -99,6 +99,8 @@ sub print_subheadder () {
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td height="0" align="right" valign="top" bgcolor="#9C9C9C">
 &nbsp
+<a href="$CGI?TASK=MODIFY&ID=$ID"><font color="#FFFFFF">Modify this job</font></a>
+<font color="#FFFFFF">&nbsp|&nbsp</font>
 <a href="$CGI?TASK=RUN&ID=$ID"><font color="#FFFFFF">Metabolites</font></a>
 <font color="#FFFFFF">&nbsp|&nbsp</font>
 <a href="$CGI?TASK=SAMPLES&ID=$ID"><font color="#FFFFFF">Samples</font></a>
@@ -535,6 +537,39 @@ Visit our NAR-web server:
 EOF11
 
 }
+}
+
+#############################################################
+################ MODIFY ########################################
+#############################################################
+elsif($TASK eq 'MODIFY') {
+$number = time;
+chomp($number);
+$extraNumber = int(rand()*1000);
+chomp($extraNumber);
+$I_D = "$number$extraNumber";
+if($ID =~ m/(\w+)-/){
+	$ID = $1."-".$I_D;
+	$parent_ID = $1;
+}
+else{
+	$parent_ID = $ID;
+	$ID .= "-".$I_D;
+}
+$upload_dir = "$USERDATA/$ID";
+chomp($upload_dir);
+
+# create a directory for this job
+system("mkdir $upload_dir");
+system("chmod 777 $upload_dir");
+system "mkdir $upload_dir/barplots; chmod 777 $upload_dir/barplots";
+
+print "<HTML><title>child-jobs of $parent_ID</title><body><h4>child-jobs of $parent_ID:</h4><ul>";
+my @children = `ls users/  | grep $parent_ID-`;# add all children of the parent job
+	foreach(@children){
+  print "<li>$_</li>";
+}
+print "</ul><a href=\"$CGI?ID=$parent_ID\">back</a></body></HTML>";
 
 } elsif($TASK eq 'LIST') {
 #############################################################
