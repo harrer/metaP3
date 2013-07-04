@@ -189,6 +189,7 @@ chomp($number);
 $extraNumber = int(rand()*1000000);
 chomp($extraNumber);
 $ID = "$number$extraNumber";
+$ID .= $ID;
 $upload_dir = "$USERDATA/$ID";
 chomp($upload_dir);
 
@@ -540,22 +541,21 @@ EOF11
 }
 
 #############################################################
-################ MODIFY ########################################
-#############################################################
+################ MODIFY #####################################1372969257 73262 1372969257 73262 1372969288 503957
+#############################################################1372969257 73262 1372969257 73262
 elsif($TASK eq 'MODIFY') {
+my $parent_ID = $ID;
 $number = time;
 chomp($number);
-$extraNumber = int(rand()*1000);
+$extraNumber = int(rand()*1000000);
 chomp($extraNumber);
-$I_D = "$number$extraNumber";
-if($ID =~ m/(\w+)-/){
-	$ID = $1."-".$I_D;
-	$parent_ID = $1;
+if($ID =~ m/^(\d{16})(\d{16})$/){
+	$ID = $2.$number.$extraNumber; chomp($ID);
 }
-else{
-	$parent_ID = $ID;
-	$ID .= "-".$I_D;
+elsif($ID =~ m/^(\d{16})$/){
+	$ID .= $number.$extraNumber; chomp($ID);
 }
+else{print "unsupported ID format";}
 $upload_dir = "$USERDATA/$ID";
 chomp($upload_dir);
 
@@ -564,10 +564,25 @@ system("mkdir $upload_dir");
 system("chmod 777 $upload_dir");
 system "mkdir $upload_dir/barplots; chmod 777 $upload_dir/barplots";
 
-print "<HTML><title>child-jobs of $parent_ID</title><body><h4>child-jobs of $parent_ID:</h4><ul>";
-my @children = `ls users/  | grep $parent_ID-`;# add all children of the parent job
-	foreach(@children){
-  print "<li>$_</li>";
+print "<HTML><title>jobs-tree of $parent_ID</title><body><h4>child-jobs of $parent_ID:</h4><ul>";
+my @ls = `ls`;
+my @parents;
+my $currentID = $ID;
+$currentID =~ m/(\d{16})(\d{16})/;
+#do{#trace back to root
+	foreach(@ls){
+		if(($_ =~ m/(\d{16})(\d{16})/) && ((substr $currentID, 0, 16) eq ($2))){
+			$currentID = $_;
+			push(@parents, $_);
+			last;
+		}
+	}
+	#$_ =~ m/(\d{16})(\d{16})/;
+#}while(($1 ne $2) || $currentID !~ m/^\d{16}$/);
+$parent_ID =~ m/^(\d{16})/;
+my @children = `ls users/  | egrep $1\[0-9\]{16}\$`;# add all children of the parent job
+for(1..scalar @children-1){
+  print "<li>$children[$_]</li>";
 }
 print "</ul><a href=\"$CGI?ID=$parent_ID\">back</a></body></HTML>";
 
