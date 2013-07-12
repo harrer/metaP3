@@ -161,7 +161,7 @@ if(defined $CGItask) {
 print "Content-type: text/html", "\n\n";
 
 # CGI internal PATHs
-$RACINE = "/var/www/metap3/";
+$RACINE = "/var/www/metap3";
 $USERDATA = "$RACINE/users";
 $EXEC = "/var/www/metap3/exec";
 $DATA = "/var/www/metap3/data";
@@ -183,13 +183,24 @@ $CGI =~ s/.*\///;
 #############################################################
 ################ NEW ########################################
 #############################################################
-if($TASK eq "NEW") {
+if($TASK eq "NEW" || $TASK eq "NEWCHILD") {
 $number = time;
 chomp($number);
 $extraNumber = int(rand()*1000000);
 chomp($extraNumber);
-$ID = "$number$extraNumber";
-$ID .= $ID;
+if($TASK eq "NEW"){
+	$ID = "$number$extraNumber";
+	$ID .= $ID;
+}
+else{
+	if($CGIjobID =~ m/^(\d{16})(\d{16})$/){
+	$ID = $2.$number.$extraNumber; chomp($ID);
+	}
+	elsif($CGIjobID =~ m/^(\d{16})$/){
+		$ID .= $number.$extraNumber; chomp($ID);
+	}
+	else{print "unsupported ID format";}
+}
 $upload_dir = "$USERDATA/$ID";
 chomp($upload_dir);
 
@@ -541,8 +552,8 @@ EOF11
 }
 
 #############################################################
-################ MODIFY #####################################1372969257 73262 1372969257 73262 1372969288 503957
-#############################################################1372969257 73262 1372969257 73262
+################ MODIFY #####################################
+#############################################################
 elsif($TASK eq 'MODIFY') {
 my $parent_ID = $ID;
 $number = time;
@@ -556,15 +567,12 @@ elsif($ID =~ m/^(\d{16})$/){
 	$ID .= $number.$extraNumber; chomp($ID);
 }
 else{print "unsupported ID format";}
-$upload_dir = "$USERDATA/$ID";
-chomp($upload_dir);
 
-# create a directory for this job
-system("mkdir $upload_dir");
-system("chmod 777 $upload_dir");
-system "mkdir $upload_dir/barplots; chmod 777 $upload_dir/barplots";
+print <<html;
+<!DOCTYPE html>
+<html><head><title>jobs-tree of $parent_ID</title></head><body background=\"images/white.png\" link=\"#014294\" vlink=\"#014294\" alink=\"#014294\" leftmargin=\"0\" topmargin=\"0\" marginwidth=\"0\" marginheight=\"0\"><h4>child-jobs of $parent_ID:</h4><ul>
+html
 
-print "<HTML><title>jobs-tree of $parent_ID</title><body><h4>child-jobs of $parent_ID:</h4><ul>";
 my @ls = `ls`;
 my @parents;
 my $currentID = $ID;
@@ -572,7 +580,7 @@ $currentID =~ m/(\d{16})(\d{16})/;
 #do{#trace back to root
 	foreach(@ls){
 		if(($_ =~ m/(\d{16})(\d{16})/) && ((substr $currentID, 0, 16) eq ($2))){
-			$currentID = $_;
+			#$currentID = $_;
 			push(@parents, $_);
 			last;
 		}
@@ -581,12 +589,379 @@ $currentID =~ m/(\d{16})(\d{16})/;
 #}while(($1 ne $2) || $currentID !~ m/^\d{16}$/);
 $parent_ID =~ m/^(\d{16})/;
 my @children = `ls users/  | egrep $1\[0-9\]{16}\$`;# add all children of the parent job
-for(1..scalar @children-1){
-  print "<li>$children[$_]</li>";
+if(scalar @children == 0){print "<a>no children yet</a>";}
+else{
+	for(1..scalar @children-1){
+  		print "<li><a href = \"$CGI?ID=$children[$_]\">$children[$_]</a></li>";
+	}
 }
-print "</ul><a href=\"$CGI?ID=$parent_ID\">back</a></body></HTML>";
+print "</ul> <a href=\"$CGI?ID=$parent_ID\">back</a><br>";#<a href=\"$CGI?TASK=NEWCHILD&ID=$ID\">create new child job</a> <br>
+open FILE, "$USERDATA/$parent_ID/input" or die $!;
+my @input = <FILE>;
+print <<child;
 
-} elsif($TASK eq 'LIST') {
+<TABLE width="860" height="100%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+  <TR valign="top">
+    <TD width="20" background="images/white.png">&nbsp;</TD>
+    <TD width="1" bgcolor="#000000"></TD>
+    <TD width="820">
+      <table width="820" border="0" cellpadding="0" cellspacing="0">
+        <tr><td nowrap align="center"><img src="images/white.png" width=849 height=20 border="0"></td></tr>
+        <tr><td nowrap align="center"><a href="http://metabolomics.helmholtz-muenchen.de"><img src="images/yellow.png" width=560 height=75 border="0"></a><a href="http://metabolomics.helmholtz-muenchen.de"><img src="images/metabolomips_v1_wide_75px_schraeg_yellow.png" border="0" height=75></a></td></tr>
+        <tr><td nowrap align="left"><a href="http://www.helmholtz-muenchen.de"><img SRC="images/200dpi_engl_40px.jpg" border=0 align="left"></a>
+                                    <a href="http://mips.helmholtz-muenchen.de"><img SRC="images/mipsLogo_40px.png" border=0 align="right"></a>
+                                    <a href="http://www.helmholtz-muenchen.de/gac/metabolomics/scientific-intitiative-metap/index.html"><img src="images/MetaP_LogoShadow_40px.png" border="0" align="center"></a></td></tr>
+        <tr><td height="0" align="right" valign="top" bgcolor="#9C9C9C">
+          <a href="index.html"><font color="#FFFFFF">Home</font></a>
+          <font color="#FFFFFF">&nbsp|&nbsp</font>
+          <a href="start.html"><font color="#FFFFFF">Start a new run</font></a>
+          <font color="#FFFFFF">&nbsp|&nbsp</font>
+          <a href="run.cgi?TASK=LIST"><font color="#FFFFFF">Job status</font></a>
+          <font color="#FFFFFF">&nbsp|&nbsp</font>
+          <a href="examples.html"><font color="#FFFFFF">Examples</font></a>
+          <font color="#FFFFFF">&nbsp|&nbsp</font>
+          <a href="doc.html"><font color="#FFFFFF">Documentation</font></a>
+          &nbsp
+        </td></tr>
+        <tr><td align=center>
+          <img src="images/MetaP_LogoShadow_width245.png" border="0" width=245>
+          <b><font color="9C9C9C" size=7>server</font></b>
+        </td></tr>
+      </table>
+
+      <TABLE width="800" align="center" border="0" cellpadding="0" cellspacing="0">
+
+
+
+        <TR>
+          <TD>
+<CENTER>
+<H1>Start a new job</H1>
+
+<FORM ENCTYPE="multipart/form-data" ACTION="run.cgi" METHOD="POST" NAME="frm">
+<TABLE WIDTH=600 BGCOLOR="#CCCCCC">
+<INPUT TYPE='HIDDEN' NAME='TASK' VALUE='NEWCHILD'>
+<INPUT TYPE='HIDDEN' NAME='JOBID' VALUE='$parent_ID'>
+<!-- =============================================== -->
+<TR>
+<TD WIDTH=600 BGCOLOR="#9C9C9C">
+<b>Data upload</b>
+</TD>
+</TR>
+<TR>
+<TD>
+Enter your data<a href="doc.html#format_help" target="_new"><sup>help</sup></a>
+<br>
+<br><br>
+<br>
+</TD>
+</TR>
+<TR>
+<TD>
+<b>Upload a file<b>
+<INPUT TYPE="FILE" NAME="UPLOAD" SIZE=20>
+</TD>
+</TR>
+<TR>
+<TD>
+<b>or paste your data into the field below</b>
+</TD>
+</TR>
+<TR>
+<TD>
+  <TEXTAREA ROWS="10" COLS="80" NAME="ATOM">@input</TEXTAREA><!--inlude input -->
+</TD>
+</TR>
+<!-- =============================================== -->
+<TR>
+<TD WIDTH=600 BGCOLOR="#9C9C9C">
+<b>Parameters</b>
+</TD>
+</TR>
+<TR>
+<TD>
+<TABLE>
+<!-- ------------------------------------------------- -->
+<TR>
+<TD><b><font color="#E50030">Data format</font></b><a href="doc.html#format_help" target="_new"><sup>help</sup></a></TD>
+<TD>
+<SELECT NAME="FORMAT" SIZE=1>
+<OPTION SELECTED VALUE="undef">--- select data format ---</OPTION>
+<OPTION VALUE="absoluteIDQ">AbsoluteIDQ Kit 150</OPTION>
+<OPTION VALUE="absoluteIDQ180">AbsoluteIDQ Kit 180</OPTION>
+<OPTION VALUE="csv">Quant. data (without KEGG Ids)</OPTION>
+<OPTION VALUE="csv_kegg">Quant. data (with KEGG Ids)</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>Metabolite set</TD>
+<TD>
+<SELECT NAME="METABOLITESET" SIZE=1>
+<OPTION SELECTED VALUE="biocrates">biocrates</OPTION>
+<OPTION VALUE="metabolon">metabolon</OPTION>
+<OPTION VALUE="other">other</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>Species</TD>
+<TD>
+<SELECT NAME="SPECIES" SIZE=1>
+<OPTION SELECTED VALUE="human">human</OPTION>
+<OPTION VALUE="mouse">mouse</OPTION>
+<OPTION VALUE="other">other</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>Validation data in AbsoluteIDQ<a href="doc.html#max_error" target="_new"><sup>help</sup></a> </TD>
+<TD>
+<SELECT NAME="MISSING" SIZE=1>
+<OPTION SELECTED VALUE="n">include out of quantification data</OPTION>
+<OPTION VALUE="y">drop out of quantification data</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>Outliers<a href="doc.html#outliers" target="_new"><sup>help</sup></a> </TD>
+<TD>
+<SELECT NAME="OUTLIER" SIZE=1>
+<OPTION SELECTED VALUE="n">include outliers</OPTION>
+<OPTION VALUE="y">drop outliers</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>Noisy metabolites<a href="doc.html#del_metabs" target="_new"><sup>help</sup></a> </TD>
+<TD>
+<SELECT NAME="DEL_METABS" SIZE=1>
+<OPTION SELECTED VALUE="n">include all analytes</OPTION>
+<OPTION VALUE="y">drop analytes with cv>0.25</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>References<a href="doc.html#reference" target="_new"><sup>help</sup></a> </TD>
+<TD>
+<SELECT NAME="REFERENCE" SIZE=1>
+<OPTION SELECTED VALUE="n">include references</OPTION>
+<OPTION VALUE="y">drop references</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>Metabolite ratios<a href="doc.html#ratios" target="_new"><sup>help</sup></a> </TD>
+<TD>
+<SELECT NAME="RATIOS" SIZE=1>
+<OPTION SELECTED VALUE="n">no ratios</OPTION>
+<OPTION VALUE="y">calculate ratios</OPTION>
+</SELECT>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+</TABLE>
+</TD>
+</TR>
+<!-- =============================================== -->
+<TR>
+<TD WIDTH=600 BGCOLOR="#9C9C9C">
+<b>Job information</b>
+</TD>
+</TR>
+<TR>
+<TD>
+You may enter a name for your job here.
+It will be used as a title for all output
+and to identify your job on the <A HREF="run.cgi?TASK=LIST">job status</a> page.<BR>
+<INPUT TYPE="TEXT" NAME="JOBID" SIZE=40>
+<B>job identifier, optional</B><a href="doc.html#job_identifier" target="_new"><sup>help</sup></a>
+</TD>
+</TR>
+<TR>
+<TD>
+By default, all jobs are kept privat (remember to keep track of your job-id). 
+To make jobs visible to everyone via the
+<A HREF="run.cgi?TASK=LIST">job status</a>
+page, untick the checkbox below.
+<BR>
+<INPUT TYPE="CHECKBOX" NAME="PRIVAT" CHECKED>
+<B>keep my job private</B><a href="doc.html#privacy" target="_new"><sup>help</sup></a>
+</TD>
+</TR>
+<TR>
+<TD>
+If you wish to be notified by e-mail once your job is finished,
+enter your e-mail address into the field below
+(recommended if your job is kept private). Your e-mail
+will never be shown on the internet and is used ONLY
+to notify you about your job status.
+If you enter a pseudonym (any name without a @ character), this will
+be used to identify your jobs on the
+<A HREF="run.cgi?TASK=LIST">job status</a>
+page.<BR>
+<INPUT TYPE="TEXT" NAME="EMAIL" SIZE=40>
+<B>pseudonym or e-mail, optional</B><a href="doc.html#email" target="_new"><sup>help</sup></a>
+<br>
+<br>
+</TD>
+</TR>
+<!-- =============================================== -->
+<TR>
+<TD WIDTH=600 BGCOLOR="#9C9C9C">
+<b>Data analysis (optional)</b>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>
+Phenotype data for statistical analysis (hypothesis tests etc.)
+</TD>
+</TR>
+<TR>
+<TD ALIGN="MIDDLE">
+<TABLE WIDTH=500>
+  <TR>
+  <TD WIDTH=200 ALIGN="MIDDLE" VALIGN="TOP">
+  <b>Paste your phenotype data into the field below</b><a href="doc.html#phenotype_help" target="_new"><sup>help</sup></a>
+  <br>
+  <TEXTAREA ROWS="5" COLS="10" NAME="ATOM2"></TEXTAREA>
+  </TD>
+  <TD WIDTH=200 ALIGN="MIDDLE" VALIGN="TOP">
+  <b>or upload a file</b>
+  <br>
+  <INPUT TYPE="FILE" NAME="UPLOAD2" SIZE=20>
+  </TD>
+  </TR>
+</TABLE>
+</TD>
+</TR>
+<!-- ------------------------------------------------ -->
+<TR>
+<TD>
+Auxiliary data that can be used for setting further parameters may be uploaded here
+</TD>
+</TR>
+<TR>
+<TD ALIGN="MIDDLE">
+<TABLE WIDTH=500>
+  <TR>
+  <TD WIDTH=200 ALIGN="MIDDLE" VALIGN="TOP">
+  <b>Paste your data into the field below</b><a href="doc.html#aux_help" target="_new"><sup>help</sup></a>
+  <br>
+  <TEXTAREA ROWS="5" COLS="10" NAME="ATOM3"></TEXTAREA>
+  </TD>
+  <TD WIDTH=200 ALIGN="MIDDLE" VALIGN="TOP">
+  <b>or upload a file</b>
+  <br>
+  <INPUT TYPE="FILE" NAME="UPLOAD3" SIZE=20>
+  </TD>
+  </TR>
+</TABLE>
+</TD>
+</TR>
+<!-- ------------------------------------------------
+<TR>
+<TD>
+Further job options ....
+</TD>
+</TR>
+<TR>
+<TD ALIGN="MIDDLE">
+<TABLE WIDTH=500>
+  <TR>
+  <TD WIDTH=200 ALIGN="MIDDLE" VALIGN="TOP">
+  <b>Select the R-script to be used</b><a href="doc.html#script_help" target="_new"><sup>help</sup></a>
+  </TD>
+  <TD WIDTH=200 ALIGN="MIDDLE" VALIGN="TOP">
+    <SELECT NAME="DEVELOPT" SIZE=1>
+    <OPTION SELECTED VALUE="default">use the default R scripts</OPTION>
+    </SELECT>
+  </TD>
+  </TR>
+</TABLE>
+</TD>
+</TR>
+=============================================== -->
+<TR>
+<TD WIDTH=600 BGCOLOR="#9C9C9C">
+<b>Submission</b>
+</TD>
+</TR>
+<TR ALIGN=CENTER>
+<TD>
+<br>
+  <INPUT TYPE="submit" VALUE="submit">
+  <INPUT TYPE="reset" VALUE="reset form">
+<br><br>
+</TD>
+</TR>
+<!-- =============================================== -->
+</TABLE>
+</FORM>
+
+<br> <br> <br>
+
+<!-- include BOT -->
+  <BR><BR><BR><BR>
+
+   KEGG Data is provided by the <a href="http://www.kegg.org">Kanehisa Laboratories</a>
+   for academic use.  Any commercial use of KEGG data requires a license
+   agreement from <a href="http://www.pathway.jp">Pathway Solutions Inc</a>.
+  <BR>
+   The Helmholtz Zentrum M&uuml;nchen <a href="http://www.helmholtz-muenchen.de/en/serviceline/imprint/index.html">imprint</a> applies.
+  <BR><BR>
+   If you find results from this site helpful for your research, please cite:
+   <BR>
+   <P>
+    G. Kastenm&uuml;ller, W. R&ouml;misch-Margl, B. W&auml;gele, E. Altmaier, and K. Suhre, <a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2946609/?tool=pubmed" target="_new"><i>meta</i>P-<i>Server</i>: A Web-Based Metabolomics Data Analysis Tool</a>,
+    <i>J Biomed Biotechnol.</i>, pii: 839862. 2011, Epub 2010 Sep 5.</P>
+   <BR>
+   This work was supported in part by:
+   <BR>
+    <a href="http://www.dzd-ev.de/"><img SRC="images/logo_DZD.png" height=40 align=CENTER></a>
+    <a href="http://www.medizin.uni-greifswald.de/gani_med/index.php"><img SRC="images/logo_ganimed.gif" height=40 align=CENTER></a>
+    <a href="http://www.sysmbo.de/"><img SRC="images/logo_SysMBo.gif" height=40 align=CENTER></a>
+    <a href="http://www.pathogenomics-era.net/index.php"><img SRC="images/logo_ERA-Net.gif" height=40 align=CENTER></a>
+   <BR>
+<H4>
+  This page is maintained by Gabi Kastenm&uuml;ller and Werner R&ouml;misch-Margl.
+<br>
+  Last modification: 12th March 2013
+</H4>
+Visit our NAR-web server:
+  <BR>
+<a href="http://www.masstrix.org"><img SRC="http://metabolomics.helmholtz-muenchen.de/suhre/masstrix_banner.gif" height=25 align=CENTER></a>
+<a href="http://www.elnemo.org"><img SRC="http://metabolomics.helmholtz-muenchen.de/suhre/elnemo_banner.gif" height=25 align=CENTER></a>
+<a href="http://www.igs.cnrs-mrs.fr/FusionDB/"><img SRC="http://metabolomics.helmholtz-muenchen.de/suhre/FusionDB_logo.gif" height=25 align=CENTER></a>
+<a href="http://www.igs.cnrs-mrs.fr/Caspr2/index.cgi"><img SRC="http://metabolomics.helmholtz-muenchen.de/suhre/Caspr_logo2.JPG" height=25 align=CENTER></a>
+<a href="http://www.igs.cnrs-mrs.fr/phydbac/"><img SRC="http://metabolomics.helmholtz-muenchen.de/suhre/logo_phydbac.jpg" height=25 align=CENTER></a>
+<a href="http://www.tcoffee.org"><img SRC="http://metabolomics.helmholtz-muenchen.de/suhre/logo_tcoffee2.jpg" height=25 align=CENTER></a>
+  <BR>
+</CENTER>
+<!-- end of main centering -->
+          </TD>
+        </TR>
+      </TABLE>
+    </TD>
+    <TD></TD>
+    <TD width="1" bgcolor="#000000"></TD>
+    <TD width="20" background="images/white.png">&nbsp;</TD>
+  </TR>
+</TABLE>
+</body>
+</html>
+child
+}
+
+ elsif($TASK eq 'LIST') {
 #############################################################
 ################ LIST ######################################
 #############################################################
