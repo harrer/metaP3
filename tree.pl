@@ -6,12 +6,12 @@ sub findParent{}
 sub buildTree
 {
 	my $parentID = $_[0];
-	my @ls = `ls users/`;
+	my @ls = `ls ~/Documents/users`;
 	my @sons = ($parentID);
 	foreach(@ls){
 		my $parent = substr($parentID, 16, 16);
 		if($_ =~ m/^($parent\d{16})$/ && $1 ne $parentID){
-			my @son = $_;
+			my @son = &buildTree($1);#$_;
 			my $ref = \@son;
 			push(@sons, $ref);
 		}
@@ -22,7 +22,7 @@ sub buildTree
 my @tree = &buildTree("13748300604521801374830060452180");
 my $i=0;
 foreach(@tree){
-	print $_->[0] unless $i==0;
+	print $_->[0]."\n" unless $i==0;
 	$i++;
 }
 
@@ -38,10 +38,10 @@ sub mkdirs
 	$number .= $extraNumber;
 	chomp($number);
 	if(defined $_[0]){
-		`mkdir users/$_[0]$number`;
+		`mkdir ~/Documents/users$_[0]$number`;
 	}
 	else{
-		`mkdir users/$number$number`;
+		`mkdir ~/Documents/users$number$number`;
 	}
 	print $number."\n";
 }
