@@ -1,7 +1,29 @@
 #!/usr/bin/perl
 use strict; use warnings;
 
-sub findParent{}
+sub findRoot{
+	my $ID = $_[0];
+	$ID =~ m/(\d{16})(\d{16})/;
+	my $parent = $1;
+	my $child = $2;
+	my @names = `ls users`;
+	while($1 ne $2){#is not root
+		foreach(@names){
+			$_ =~ m/(\d{16})(\d{16})/;
+			if($2 eq $parent){
+				$parent = $1;
+				$child = $2;
+				$ID = $_;
+				last;
+			}
+		}
+		$ID =~ m/(\d{16})(\d{16})/;
+	}
+	$ID =~ m/(\d{16})(\d{16})/;
+	if($1 eq $2){
+		$ID;
+	}
+}
 
 sub buildTree
 {
@@ -26,7 +48,8 @@ sub buildTree
 	#return(@sons);
 }
 
-&buildTree("13748300604521801374830060452180");
+&buildTree("13754284785691341375428478569134");
+
 #my @tree = &buildTree("13748300604521801374830060452180");
 #my $i=0;
 #foreach(@tree){
@@ -54,6 +77,6 @@ sub mkdirs
 	print $number."\n";
 }
 
-#&mkdirs(1374830086569720);
+#&mkdirs(1375428504584837);
 
 
