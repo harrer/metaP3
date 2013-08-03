@@ -27,35 +27,26 @@ sub findRoot{
 
 sub buildTree
 {
-	my $parentID = $_[0];
+	my $parentID = $_[0]; chomp($parentID);
 	my @ls = `ls users/`;
-	#my @sons = ($parentID);
 	my $tabs = (defined $_[1])? $_[1] : 0;
 	foreach(@ls){
 		my $parent = substr($parentID, 16, 16);
-		if($_ =~ m/^($parent\d{16})$/ && $1 ne $parentID){
-			#my @son = &buildTree($1);
+		if($_ =~ m/^($parent\d{16})$/ && $1 ne $parentID){#found a son
 			my $t = "";
-			for(1..$tabs){
+			for(1..$tabs){#append tabs
 				$t .= "\t";
 			}
-			print $t.$1."\n";
+			print "$t$1\n";
 			&buildTree($1, $tabs+1);
-			#my $ref = \@son;
-			#push(@sons, $ref);
 		}
 	}
-	#return(@sons);
 }
 
-&buildTree("13754284785691341375428478569134");
 
-#my @tree = &buildTree("13748300604521801374830060452180");
-#my $i=0;
-#foreach(@tree){
-#	print $_->[0]."\n" unless $i==0;
-#	$i++;
-#}
+
+&buildTree(&findRoot("13754285045848371375428518689530"));
+#print &findRoot("13754285045848371375428518689530");
 
 sub mkdirs
 {
@@ -69,7 +60,8 @@ sub mkdirs
 	$number .= $extraNumber;
 	chomp($number);
 	if(defined $_[0]){
-		`mkdir users/$_[0]$number`;
+		my $pID = substr($_[0], 16, 16);
+		`mkdir users/$pID$number`;
 	}
 	else{
 		`mkdir users/$number$number`;
@@ -77,6 +69,4 @@ sub mkdirs
 	print $number."\n";
 }
 
-#&mkdirs(1375428504584837);
-
-
+#&mkdirs("13754284785691341375428504584837");
