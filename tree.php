@@ -3,7 +3,7 @@
 $idLength = 16;
 $pattern = "/([0-9]{".$idLength."})([0-9]{".$idLength."})$/";
 
-function findRoot($ID = "13748300638451741374830063845174") {
+function findRoot($ID) {
 	global $idLength;
 	global $pattern;
 	preg_match($pattern, $ID, $matches);
@@ -29,32 +29,28 @@ function findRoot($ID = "13748300638451741374830063845174") {
 	}
 }
 
-//echo(findRoot());
+print_r(unserialize(serialize(buildtree(findRoot("13754285186895301375434289583874")))));
 
-$tree = array();
-
-function buildTree($parentID){
-	global $tree;
-	push($tree, $parentID);
-	$ls = lsToArray("users/*");
-	foreach($ls as $value){
-		$parent = substr($parentID, $idLength, $idLength);
-		if(preg_match("/".$parent."[0-9]{".$idLength."}/", $value, $matches) && $matches[1] != $parentID){#found a son
-			$son = &buildTree($matches[1]);
-			push($t
-			return
-		}
-	}
-	return $tree;
+function buildTree($parentID) {
+	$tree = array();
+	global $idLength;
+    array_push($tree, $parentID);
+    $ls = lsToArray("/home/tobias/Desktop/metap/metaP3/users/*");
+    foreach ($ls as $value) {
+        $parent = substr($parentID, $idLength, $idLength);
+        if (preg_match("/" . $parent . "[0-9]{" . $idLength . "}/", $value, $matches) && $matches[0] != $parentID) {#found a son
+            array_push($tree, buildTree($value));
+        }
+    }
+    return $tree;
 }
 
-function lsToArray($path){
-	$ls = glob($path, GLOB_ONLYDIR);
-	foreach($ls as &$value){
-		$value = basename($value);
-	}
-	return $ls;
-}
-
+        function lsToArray($path) {
+            $ls = glob($path, GLOB_ONLYDIR);
+            foreach ($ls as &$value) {
+                $value = basename($value);
+            }
+            return $ls;
+        }
 ?>
 

@@ -1,5 +1,5 @@
--tree.php fertig machen
--mehrdimensionales array mit "(de)serialize" in String und zurück umwandeln.
+#-tree.php fertig machen
+#-mehrdimensionales array mit "(de)serialize" in String und zurück umwandeln.
 -tree.php in var/www/metap-dev/metaP/metaPListJobsScanner.php einbauen
 -"Start a new run" auf neuem Server einrichten.
 -Einzelne Schritte aufteilen, Kontrolle der Eingabedaten, schrittweises Eingeben der Parameter
