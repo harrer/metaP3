@@ -9,7 +9,7 @@ function findRoot($ID) {
 	preg_match($pattern, $ID, $matches);
     $parent = $matches[1];
     $child = $matches[2];
-	$names = lsToArray("users/*");
+	$names = lsToArray("/home/metabolomics/metap-dev/metaP/users/*");
 	while($matches[1] != $matches[2]){#is not root
 		foreach($names as $value){
 			preg_match($pattern, $value, $matches);
@@ -29,13 +29,18 @@ function findRoot($ID) {
 	}
 }
 
-print_r(unserialize(serialize(buildtree(findRoot("13794182717410031379418417430622")))));
+function findAllRoots(){
+	//TO BE IMPLEMENTED!!
+}
+
+//print_r(unserialize(serialize(buildtree(findRoot("13754285186895301375434289583874")))));
+//print_r(buildtree(findRoot("13794182717410031379418417430622")));
 
 function buildTree($parentID) {
 	$tree = array();
 	global $idLength;
     array_push($tree, $parentID);
-    $ls = lsToArray("/home/tobias/Desktop/metap/metaP3/users/*");
+    $ls = lsToArray("/home/metabolomics/metap-dev/metaP/users/*");
     foreach ($ls as $value) {
         $parent = substr($parentID, $idLength, $idLength);
         if (preg_match("/" . $parent . "[0-9]{" . $idLength . "}/", $value, $matches) && $matches[0] != $parentID) {#found a son
