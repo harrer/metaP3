@@ -70,17 +70,33 @@ function showTree(){
 	}
 }
 
-function showTreeAux($roots = array()){
-	$echo = "<ul>";
+function showTreeAux($roots = array()){//##########################################
+	$echo = "\t<ul>\n";
 	foreach($roots as $index => $root){
 		if($index == 0){
-			$echo .= "<li>" . $root . "</li>\n";
+			if(sizeof($roots) == 1){
+				$echo .= "\t<li>" . $root . "</li>\n";
+			}
+			else{
+				$echo .= showTreeAux($root);
+			}
 		}
 		else{ //sizeof($root) > 1	if($index > 0)
-			$echo .= "<li>" . showTreeAux($root) . "</li>\n";
+			$echo .= showTreeAux($root);
 		}
 	}
-	$echo .= "</ul>";
+	$echo .= "\t</ul>\n";
+	return $echo;
+}
+
+function showTreeJS(){
+	$echo = "";
+	$roots = findAllRoots();
+	foreach ($roots as $root){
+		$echo .= "<div class=\"dhtmlxTree\" id=\"treeboxbox_tree\" setImagePath=\"frontend/img/\" style=\"width:350px; height:218px;overflow:auto;\">\n";
+		$echo .= showTreeAux(buildTree($root));
+		$echo .= "</div>\n";
+	}
 	return $echo;
 }
 
