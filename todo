@@ -1,6 +1,9 @@
 #-tree.php fertig machen
 #-mehrdimensionales array mit "(de)serialize" in String und zurück umwandeln.
--tree.php in var/www/metap-dev/metaP/metaPListJobsScanner.php einbauen
+-level Information im Quellcode mitgeben zB "<li> class=... $root ... </li>
+-options file informationen mit ID in Verbindung bringen, vgl. metaPCommonFunctions.php und $useroptions in metaPListJobScanner.php
+-"Explorer"-Baum Darstellung für die job-dependencies finden (javaScript etc.)
+
 -"Start a new run" auf neuem Server einrichten.
 -Einzelne Schritte aufteilen, Kontrolle der Eingabedaten, schrittweises Eingeben der Parameter
 

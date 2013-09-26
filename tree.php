@@ -29,6 +29,7 @@ function findRoot($ID) {
 	}
 }
 
+//echo(findRoot("13794182717410031379418417430622"));
 print_r(unserialize(serialize(buildtree(findRoot("13794182717410031379418417430622")))));
 
 function buildTree($parentID) {
