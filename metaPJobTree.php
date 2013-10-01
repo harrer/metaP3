@@ -70,23 +70,28 @@ function showTree(){
 	}
 }
 
-function showTreeAux($roots = array()){//##########################################
-	$echo = "\t<ul>\n";
-	foreach($roots as $index => $root){
-		if($index == 0){
-			if(sizeof($roots) == 1){
-				$echo .= "\t<li>" . $root . "</li>\n";
-			}
-			else{
-				$echo .= showTreeAux($root);
-			}
+function showTreeAux($roots = array(), $ul = TRUE){//##########################################
+	$echo = $ul ? "<ul>" : "";
+  foreach($roots as $index => $root){
+    if($index == 0){
+		if(sizeof($roots) > 1){
+     		$echo .= "<li>" . $root . "<ul>\n";
 		}
-		else{ //sizeof($root) > 1	if($index > 0)
-			$echo .= showTreeAux($root);
+		else{
+			$echo .= "<li>" . $root . "</li>\n";
 		}
-	}
-	$echo .= "\t</ul>\n";
-	return $echo;
+    }
+    else{ //sizeof($root) > 1  if($index > 0)
+		if(sizeof($root) == 1){
+   			$echo .=   showTreeAux($root, FALSE) . "\n";
+		}
+		else{
+			$echo .=  showTreeAux($root, FALSE) . "\n";
+		}
+    }
+  }
+  $echo .= $ul ? "</ul>" : "";
+  return $echo; 
 }
 
 function showTreeJS(){

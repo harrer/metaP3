@@ -1,10 +1,31 @@
-#-tree.php fertig machen
-#-mehrdimensionales array mit "(de)serialize" in String und zurück umwandeln.
+#-"Explorer"-Baum Darstellung für die job-dependencies finden (javaScript etc.)
 -level Information im Quellcode mitgeben zB "<li> class=... $root ... </li>
 -options file informationen mit ID in Verbindung bringen, vgl. metaPCommonFunctions.php und $useroptions in metaPListJobScanner.php
--"Explorer"-Baum Darstellung für die job-dependencies finden (javaScript etc.)
 
 -"Start a new run" auf neuem Server einrichten.
 -Einzelne Schritte aufteilen, Kontrolle der Eingabedaten, schrittweises Eingeben der Parameter
+
+
+
+
+
+
+
+$echo = "\t<ul>\n";
+	foreach($roots as $index => $root){
+		if($index == 0){
+			if(sizeof($roots) == 1){
+				$echo .= "\t<li>" . $root . "</li>\n";
+			}
+			else{
+				$echo .= showTreeAux($root);
+			}
+		}
+		else{ //sizeof($root) > 1	if($index > 0)
+			$echo .= showTreeAux($root);
+		}
+	}
+	$echo .= "\t</ul>\n";
+	return $echo;
 
 
